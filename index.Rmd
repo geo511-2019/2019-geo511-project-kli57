@@ -1,7 +1,7 @@
 ---
 title: "Unmixing vegetation, soil and urban using linear mixture analysis"
 author: "Ke Li"
-subtitle: jokok
+subtitle: No subtitle
 ---
 
 # Introduction
