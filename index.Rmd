@@ -1,11 +1,11 @@
 ---
-title: "I have the best titles"
-author: Your name here
-subtitle: Subtitle here if desired
+title: "Unmixing vegetation, soil and urban using linear mixture analysis"
+author: "Ke Li"
+subtitle: jokok
 ---
 
 # Introduction
-My really awesome and complete introduction will go here.  
+Knowing distribution of soil, vegtation and urban plays a significant role in city management and environment issue. Image classification combining with remote sensing satellite data provides an promosing way to display mapping of these components. However, assigning one class in one pixel which has 30 meter sptial resolution always accompany with some classification mistake since one pixel always mixed with different classes. In this project, I intend to use linear mixture analysis to acquire proportion of each class witnin only one pixel.   
 
 # Materials and methods
 
