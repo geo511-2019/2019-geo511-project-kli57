@@ -13,9 +13,9 @@
 <meta name="author" content="Ke Li" />
 
 
-<title>Unmixing vegetation, soil and urban using linear mixture analysis</title>
+<title>Monitoring vegetation change for over 30 years</title>
 
-<script src="site_libs/jquery-1.12.4/jquery.min.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/simplex.min.css" rel="stylesheet" />
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
@@ -27,15 +27,6 @@
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
-<script src="site_libs/htmlwidgets-1.3/htmlwidgets.js"></script>
-<link href="site_libs/leaflet-1.3.1/leaflet.css" rel="stylesheet" />
-<script src="site_libs/leaflet-1.3.1/leaflet.js"></script>
-<link href="site_libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet" />
-<script src="site_libs/Proj4Leaflet-1.0.1/proj4-compressed.js"></script>
-<script src="site_libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script>
-<link href="site_libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet" />
-<script src="site_libs/leaflet-binding-2.0.2/leaflet.js"></script>
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
@@ -274,6 +265,12 @@ $(document).ready(function () {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -367,8 +364,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Unmixing vegetation, soil and urban using linear mixture analysis</h1>
-<h3 class="subtitle">No subtitle</h3>
+<h1 class="title toc-ignore">Monitoring vegetation change for over 30 years</h1>
 <h4 class="author">Ke Li</h4>
 
 </div>
@@ -376,269 +372,126 @@ div.tocify {
 
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
-<p>Knowing distribution of soil, vegtation and urban plays a significant role in city management and environment issue. Image classification combining with remote sensing satellite data provides an promosing way to display mapping of these components. However, assigning one class in one pixel which has 30 meter sptial resolution always accompany with some classification mistake since one pixel always mixed with different classes. In this project, I intend to use linear mixture analysis to acquire proportion of each class witnin only one pixel.</p>
+<p>Knowing change of vegetation plays a significant role in city management and environment issue. Image classification combining with remote sensing satellite data provides an promosing way to display mapping of vegetation change. However, assigning one class in one pixel which has 30 meter sptial resolution always accompany with some classification mistake, citing the reason that one pixel always mixed with different classes. In this project, I intend to use multiple endmember spectral mixture analysis to acquire proportion of each class for per-pixel level. Moreover, to understand change of vegetation, supervised classification method will be used in unmixing image to get the trend of vegetation change.</p>
 </div>
 <div id="materials-and-methods" class="section level1">
 <h1>Materials and methods</h1>
-<p>Narrative and most code will go here. Describe what you are doing and show how to do it (with code).</p>
-<p>You can do bullets like this:</p>
-<ul>
-<li>The first most important thing</li>
-<li>The second most important thing</li>
-<li>The third most important thing</li>
-</ul>
-<p>You can do numbers like this:</p>
+<p>Since vegetation change is focus on change between 30 years, Landsat 8 OLI and Landsat 5 August images will be used in this project to collecting enough pure pixels of each class and finding training samples of vegetation increase, vegetation decrease and vegetation no change class.There are three main steps in this project:</p>
 <ol style="list-style-type: decimal">
-<li>The first most important thing</li>
-<li>The second most important thing</li>
-<li>The third most important thing</li>
+<li><p>The pure pixel of vegetation, urban area, soil and water was collected in 1988, 1998, 2008 and 2018 using ROI method in ENVI. The location of each sample were recorded and export as .shp file. The mean value of each extract satellite value of each class is considered as the spectrum of pure pixel.</p></li>
+<li><p>Acquiring fraction of each class within one-pixel level after performing multiple endmemer spectral mixture analysis, the change images between 1988 and 1998, 1998 and 2008, 2008 and 2018 were acquired using subtraction method. Therefore, each pixel contains change information about vegetation, urban, soil and water.</p></li>
+<li><p>ROI method in ENVI in each change year was used in collection change pixel about vegetation increase, vegetation decrease, vegetation no change and other change. Change points of vegetation increase, vegetation decrease, vegetation no change are collected about each 300 points, the number of point of other change points are 150 points. I use 70% samples to train maximum likelihood classification model, and 30% samples to test classification method.</p></li>
 </ol>
-<p>See <a href="http://rmarkdown.rstudio.com/">http://rmarkdown.rstudio.com/</a> for all the amazing things you can do.</p>
-<p>Here’s my first code chunk.</p>
-<pre class="r"><code>1+2</code></pre>
-<pre><code>## [1] 3</code></pre>
-<p>Load any required packages in a code chunk (you may need to install some packages):</p>
-<pre class="r"><code>library(tidyverse)
-library(leaflet)
-library(kableExtra)
-knitr::opts_chunk$set(cache=TRUE)  # cache the results for quick compiling</code></pre>
-<div id="download-and-clean-all-required-data" class="section level2">
-<h2>Download and clean all required data</h2>
-<pre class="r"><code>n=20
-data=data.frame(x=runif(n,-180,180),
-                y=runif(n,-60,60),
-                size = runif(n, 5, 20),
-                category = factor(
-                  sample(letters[1:5], n, replace = TRUE)
-                  ),
-                value = rnorm(n))</code></pre>
-<pre class="r"><code>data %&gt;% 
-  slice(1:10) %&gt;% #show only 1:n rows
-  kable(digits=2,align=&quot;c&quot;)%&gt;% #make table and round to two digits
-  kable_styling(bootstrap_options = 
-                  c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;, &quot;responsive&quot;)) #apply other formatting</code></pre>
-<table class="table table-striped table-hover table-condensed table-responsive" style="margin-left: auto; margin-right: auto;">
-<thead>
-<tr>
-<th style="text-align:center;">
-x
-</th>
-<th style="text-align:center;">
-y
-</th>
-<th style="text-align:center;">
-size
-</th>
-<th style="text-align:center;">
-category
-</th>
-<th style="text-align:center;">
-value
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center;">
-149.23
-</td>
-<td style="text-align:center;">
--58.89
-</td>
-<td style="text-align:center;">
-14.43
-</td>
-<td style="text-align:center;">
-a
-</td>
-<td style="text-align:center;">
-1.06
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-123.83
-</td>
-<td style="text-align:center;">
-47.06
-</td>
-<td style="text-align:center;">
-17.12
-</td>
-<td style="text-align:center;">
-d
-</td>
-<td style="text-align:center;">
-1.60
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-155.16
-</td>
-<td style="text-align:center;">
-43.94
-</td>
-<td style="text-align:center;">
-6.28
-</td>
-<td style="text-align:center;">
-c
-</td>
-<td style="text-align:center;">
-0.10
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
--4.97
-</td>
-<td style="text-align:center;">
--43.77
-</td>
-<td style="text-align:center;">
-5.35
-</td>
-<td style="text-align:center;">
-c
-</td>
-<td style="text-align:center;">
-0.74
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-118.35
-</td>
-<td style="text-align:center;">
--50.78
-</td>
-<td style="text-align:center;">
-19.40
-</td>
-<td style="text-align:center;">
-d
-</td>
-<td style="text-align:center;">
-1.34
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
--104.27
-</td>
-<td style="text-align:center;">
-16.82
-</td>
-<td style="text-align:center;">
-5.86
-</td>
-<td style="text-align:center;">
-d
-</td>
-<td style="text-align:center;">
--1.10
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
--68.79
-</td>
-<td style="text-align:center;">
--51.50
-</td>
-<td style="text-align:center;">
-12.88
-</td>
-<td style="text-align:center;">
-d
-</td>
-<td style="text-align:center;">
-1.33
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-104.92
-</td>
-<td style="text-align:center;">
-19.66
-</td>
-<td style="text-align:center;">
-12.68
-</td>
-<td style="text-align:center;">
-d
-</td>
-<td style="text-align:center;">
-1.66
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-33.70
-</td>
-<td style="text-align:center;">
-31.16
-</td>
-<td style="text-align:center;">
-13.22
-</td>
-<td style="text-align:center;">
-b
-</td>
-<td style="text-align:center;">
--0.29
-</td>
-</tr>
-<tr>
-<td style="text-align:center;">
-45.02
-</td>
-<td style="text-align:center;">
--0.16
-</td>
-<td style="text-align:center;">
-11.30
-</td>
-<td style="text-align:center;">
-a
-</td>
-<td style="text-align:center;">
--2.13
-</td>
-</tr>
-</tbody>
-</table>
-<p>Add any additional processing steps here.</p>
+<p>The packages used in this project are listed below:</p>
+<pre class="r"><code>library(googledrive)
+library(raster)
+library(rgdal)
+library(sf)
+library(foreach)
+library(doParallel)
+library(tidyverse)
+library(RStoolbox)</code></pre>
+<p>The post image is Landsat8OLI image I used in 2018.</p>
+<p><img src="index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<div id="unmixing-and-classification" class="section level2">
+<h2>Unmixing and classification</h2>
+<p>After extract pure pixel satellite value, the value of endmember of each class were averaged as the value of each pure class.</p>
+<pre class="r"><code>extract_water_2018=raster::extract(img2018,img2018_water)
+extract_veg_2018=raster::extract(img2018,img2018_veg)
+extract_urban_2018=raster::extract(img2018,img2018_urban)
+extract_soil_2018=raster::extract(img2018,img2018_soil)
+
+water_2018&lt;-colMeans(foreach(i=1:NROW(extract_water_2018),.combine = &quot;rbind&quot;)%do%
+                       unlist(extract_water_2018[[i]]))
+soil_2018&lt;-colMeans(foreach(i=1:NROW(extract_soil_2018),.combine = &quot;rbind&quot;)%do%
+                      unlist(extract_soil_2018[[i]]))
+urban_2018&lt;-colMeans(foreach(i=1:NROW(extract_urban_2018),.combine = &quot;rbind&quot;)%do%
+                       unlist(extract_urban_2018[[i]]))
+veg_2018&lt;-colMeans(foreach(i=1:NROW(extract_veg_2018),.combine = &quot;rbind&quot;)%do%
+                     unlist(extract_veg_2018[[i]]))
+
+end_2018&lt;-rbind(water_2018,soil_2018,urban_2018,veg_2018)
+rownames(end_2018)&lt;-c(&#39;water&#39;,&quot;soil&quot;,&#39;urban&#39;,&#39;veg&#39;)
+
+end_2018</code></pre>
+<pre><code>##       ImageBuffalo2017.2019.1 ImageBuffalo2017.2019.2 ImageBuffalo2017.2019.3
+## water                439.1800                494.1145                315.8969
+## soil                 567.6534                897.0720                935.8900
+## urban               1185.8796               1507.8604               1650.2978
+## veg                  225.7322                461.0819                254.7379
+##       ImageBuffalo2017.2019.4 ImageBuffalo2017.2019.5 ImageBuffalo2017.2019.6
+## water                330.4039                196.6204                155.0606
+## soil                3259.7874               2437.1682               1682.1300
+## urban               2268.0946               2242.4622               1832.0127
+## veg                 3700.2296               1464.5617                599.7139</code></pre>
+<p>Multiple Endmember Spectral Mixture Anslysis was used in acquiring fraction of each class. By allowing various endmember for per-pixel level, each pixel can be accounted for fraction of each class. In this study, MESMA acquired five imgae: soil fraction, vegetation fraction, urban fracion and water fraction and RMSE. Considering the change fraction of four class, the first four layer were extracted.</p>
+<pre class="r"><code>unmix2018 &lt;- mesma(img2018,end_2018, method = &quot;NNLS&quot;)
+unmix2008 &lt;- mesma(img2008,end_2008, method = &quot;NNLS&quot;)
+change_2018&lt;- (unmix2018-unmix2008)[[1:4]]</code></pre>
+<p>The collected shapefile data is not spatialpoint data frame, so I create data frame using imported data point and connect to the longitude and latitude. And Maximum likelihood to classify the four class: vegetation increase, vegetation decrease, vegetation nochange and other.</p>
+<pre class="r"><code>class_2018=data.frame(class=c(rep(&#39;vegincrease2018&#39;,length(vegincrease2018$ID)),
+                              rep(&#39;vegdecrease2018&#39;,length(vegdecrease2018$ID)),
+                              rep(&#39;vegnochange2018&#39;,length(vegnochange2018$ID)),
+                              rep(&#39;other2018&#39;,length(other2018$ID))))
+vegin_lonlat2018&lt;-as.data.frame(st_coordinates(vegincrease2018$geometry))
+vegde_lonlat2018&lt;-as.data.frame(st_coordinates(vegdecrease2018$geometry))
+vegno_lonlat2018&lt;-as.data.frame(st_coordinates(vegnochange2018$geometry))
+other_lonlat2018&lt;-as.data.frame(st_coordinates(other2018$geometry))
+
+lon_lat_2018&lt;-rbind(vegin_lonlat2018,vegde_lonlat2018,vegno_lonlat2018,other_lonlat2018)
+training2018&lt;-SpatialPointsDataFrame(lon_lat_2018,class_2018)
+crs(training2018)&lt;-crs(change_2018)
+mlh_2018&lt;-superClass(change_2018, trainData = training2018, responseCol = &quot;class&quot;, 
+                     model=&quot;mlc&quot;, tuneLength = 1, trainPartition = 0.7)</code></pre>
 </div>
 </div>
 <div id="results" class="section level1">
 <h1>Results</h1>
-<p>Show tables, plots, etc. and describe them.</p>
-<pre class="r"><code>m &lt;- leaflet(data) %&gt;% 
-  addTiles() %&gt;% 
-  addCircleMarkers(~x, ~y, radius = ~size,color = ~as.factor(category)) %&gt;% 
-  addPopups(~x[2], ~y[2], &quot;Random popup&quot;)
-m  # a map with the default OSM tile layer</code></pre>
-<div class="figure">
-<div id="htmlwidget-002770f205adc13c9284" style="width:576px;height:288px;" class="leaflet html-widget"></div>
-<script type="application/json" data-for="htmlwidget-002770f205adc13c9284">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addCircleMarkers","args":[[-58.8949367031455,47.0587040763348,43.9401089306921,-43.7721710745245,-50.7847544364631,16.8155353423208,-51.5039299149066,19.6575680281967,31.1554729286581,-0.158956227824092,15.1787350606173,50.3357696067542,-0.33901515416801,-37.4042803421617,36.2011318746954,-31.6280383430421,-9.8059309925884,-25.3769010398537,-25.9309492819011,27.7745505329221],[149.232934433967,123.832393102348,155.158222066239,-4.97251594439149,118.354766825214,-104.270865647122,-68.7909223046154,104.924738835543,33.7013038247824,45.0172139145434,-19.4609212316573,-153.283300632611,-158.40470071882,-89.9530844762921,-124.655595738441,91.4463387988508,176.406748602167,146.350598093122,142.904128236696,158.584150895476],[14.4316891266499,17.1226371766534,6.27954134251922,5.34613716299646,19.4030893105082,5.85642379242927,12.8770802298095,12.6786975585856,13.2192638481501,11.3005701743532,11.9256250769831,15.774099555565,15.3038904967252,13.6763794207945,19.4873168342747,17.0600859005935,19.0309318702202,17.3774524428882,12.0712256222032,13.4222202375531],null,null,{"interactive":true,"className":"","stroke":true,"color":["a","d","c","c","d","d","d","d","b","a","c","b","b","a","d","a","b","d","c","c"],"weight":5,"opacity":0.5,"fill":true,"fillColor":["a","d","c","c","d","d","d","d","b","a","c","b","b","a","d","a","b","d","c","c"],"fillOpacity":0.2},null,null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPopups","args":[47.0587040763348,123.832393102348,"Random popup",null,null,{"maxWidth":300,"minWidth":50,"autoPan":true,"keepInView":false,"closeButton":true,"className":""}]}],"limits":{"lat":[-58.8949367031455,50.3357696067542],"lng":[-158.40470071882,176.406748602167]}},"evals":[],"jsHooks":[]}</script>
-<p class="caption">
-Map of completely random data
-</p>
-</div>
-<pre class="r"><code>data %&gt;% 
-  ggplot(aes(x=x,y=y,col=category))+
-  geom_point()</code></pre>
-<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre><code>##                  Reference
+## Prediction        other1988 vegdecrease1988 vegincrease1988 vegnochange1988
+##   other1988              43               0               5               2
+##   vegdecrease1988         2              92               0               0
+##   vegincrease1988         0               1              70               2
+##   vegnochange1988         0               0               0              85</code></pre>
+<pre><code>##       Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
+##   9.602649e-01   9.460489e-01   9.316200e-01   9.793025e-01   3.079470e-01 
+## AccuracyPValue  McnemarPValue 
+##  5.387037e-130            NaN</code></pre>
+<pre><code>##                  Reference
+## Prediction        other2008 vegdecrease2008 vegincrease2008 vegnochange2008
+##   other2008              45               0               0               2
+##   vegdecrease2008         0              84               0               0
+##   vegincrease2008         0               0              52               0
+##   vegnochange2008         0               0               0              86</code></pre>
+<pre><code>##       Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
+##   9.925651e-01   9.898333e-01   9.734020e-01   9.990983e-01   3.271375e-01 
+## AccuracyPValue  McnemarPValue 
+##  4.439153e-126            NaN</code></pre>
+<pre><code>##                  Reference
+## Prediction        other2018 vegdecrease2018 vegincrease2018 vegnochange2018
+##   other2018              42               0               1               0
+##   vegdecrease2018         0              86               0               1
+##   vegincrease2018         0               0              56               1
+##   vegnochange2018         0               0               0              85</code></pre>
+<pre><code>##       Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
+##   9.889706e-01   9.849034e-01   9.681075e-01   9.977197e-01   3.198529e-01 
+## AccuracyPValue  McnemarPValue 
+##  7.119905e-128            NaN</code></pre>
+<p>According to the confusion matrix of three change images, we can see that the classification accuracy for maximum likelihood method is higher.</p>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="864" /><img src="index_files/figure-html/unnamed-chunk-7-2.png" width="864" /></p>
+<pre class="r"><code>fre_bind</code></pre>
+<pre><code>##              1998  2008  2018
+## vegdecrease  2918  3444  2177
+## vegincrease  2968  5148  3510
+## vegnochange 20076 29501 53393</code></pre>
 </div>
 <div id="conclusions" class="section level1">
 <h1>Conclusions</h1>
-<p>What have you learned? Are there any broader implications?</p>
+<p>This study acquires fraction of each class for per-pixel level in 1988, 1998, 2008 and 2018, and use maximum likelihood classifier to monitor the change of vegetation over 30 years. The classification accuracy of change image between 1998 and 1988, 2008 and 1998,2008 and 2018 have higher accuracy from the testing data. From the vegetation trend for three chang image, the vegetation increase is higher than the vegetation decrease. The area of vegetation no change in 2018 is higher than 2008 and 1998. All in all, the coverage of vegetation is increasing and expand over years.</p>
 </div>
 <div id="references" class="section level1">
 <h1>References</h1>
+<p>Rogan, John, Janet Franklin, and Dar A. Roberts. “A comparison of methods for monitoring multitemporal vegetation change using Thematic Mapper imagery.” Remote Sensing of Environment 80.1 (2002): 143-156.</p>
 </div>
 
 <!-- give the footer some space -->
