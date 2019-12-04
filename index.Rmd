@@ -5,7 +5,10 @@ output: html_document
 editor_options: 
   chunk_output_type: inline
 ---
-
+```{r setup, include=FALSE,message=FALSE}
+library(knitr)
+knitr::opts_chunk$set(cache = TRUE)
+```
 
 # Introduction
 Knowing change of vegetation plays a significant role in city management and environment issue. Image classification combining with remote sensing satellite data provides an promosing way to display mapping of vegetation change. However, assigning one class in one pixel which has 30 meter sptial resolution always accompany with some classification mistake, citing the reason that one pixel always mixed with different classes. In this project, I intend to use multiple endmember spectral mixture analysis to acquire proportion of each class for per-pixel level. Moreover, to understand change of vegetation, supervised classification method will be used in unmixing image to get the trend of vegetation change.
@@ -21,9 +24,7 @@ Since vegetation change is focus on change between 30 years, Landsat 8 OLI and L
 3. ROI method in ENVI in each change year was used in collection change pixel about vegetation increase, vegetation decrease, vegetation no change and other change. Change points of vegetation increase, vegetation decrease, vegetation no change are collected about each 300 points, the number of point of other change points are 150 points. I use 70% samples to train maximum likelihood classification model, and 30% samples to test classification method.
 
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache = TRUE)
-```
+
 
 The packages used in this project are listed below: 
 
