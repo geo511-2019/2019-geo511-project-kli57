@@ -23,10 +23,11 @@ Since vegetation change is focus on change between 30 years, Landsat 8 OLI and L
 
 2. Acquiring fraction of each class within one-pixel level after performing multiple endmemer spectral mixture analysis, the change images between 1988 and 1998, 1998 and 2008, 2008 and 2018 were acquired using subtraction method. Therefore, each pixel contains change information about vegetation, urban, soil and water. 
 
-3. ROI method in ENVI in each change year was used in collection change pixel about vegetation increase, vegetation decrease, vegetation no change and other change. Change points of vegetation increase, vegetation decrease, vegetation no change are collected about each 300 points, the number of point of other change points are 150 points. I use 70% samples to train maximum likelihood classification model, and 30% samples to test classification method.
+3. ROI method in ENVI in each change year was used in collecting change pixel about vegetation increase, vegetation decrease, vegetation no change and other change. Change points of vegetation increase, vegetation decrease, vegetation no change are collected about each 300 points, the number of point of other change points are 150 points. I use 70% samples to train maximum likelihood classification model, and 30% samples to test classification method.
 
 
 
+## Loading package
 
 The packages used in this project are listed below: 
 
@@ -78,6 +79,8 @@ crs(buffalo_frame)<-crs(img2018)
 buffalo_img=brick("C:/Users/like9/Documents/GitHub/2019-geo511-project-kli57/data/buffalo_img.png")
 ```
 
+## Study area
+
 The post image is Landsat8OLI image I used in 2018.
 
 ```{r, echo=FALSE,message=FALSE}
@@ -87,7 +90,7 @@ plotRGB(buffalo_img,1,2,3)
 
 
 
-## Unmixing and classification
+## Extract sample value 
 
 After extract pure pixel satellite value, the value of endmember of each class were averaged as the value of each pure class. 
 
@@ -173,6 +176,11 @@ vegnochange2018=st_read("C:/Users/like9/Documents/GitHub/2019-geo511-project-kli
 
 ```
 
+
+
+## Unmixing image using Multiple Endmember Spectral Mixture Analysis
+
+
 Multiple Endmember Spectral Mixture Anslysis was used in acquiring fraction of each class. By allowing various endmember for per-pixel level, each pixel can be accounted for fraction of each class. In this study, MESMA acquired five imgae: soil fraction, vegetation fraction, urban fracion and water fraction and RMSE. Considering the change fraction of four class, the first four layer were extracted.
 ```{r}
 unmix2018 <- mesma(img2018,end_2018, method = "NNLS")
@@ -197,6 +205,9 @@ vegdecrease2008=st_read("C:/Users/like9/Documents/GitHub/2019-geo511-project-kli
 other2008=st_read("C:/Users/like9/Documents/GitHub/2019-geo511-project-kli57/data/change/2008change/2008other.shp")
 vegnochange2008=st_read("C:/Users/like9/Documents/GitHub/2019-geo511-project-kli57/data/change/2008change/2008vegnochange.shp")
 ```
+
+
+## Monitor vegetation change using Maximum likelihood classification 
 
 The collected shapefile data is not spatialpoint data frame, so I create data frame using imported data point and connect to the longitude and latitude. And Maximum likelihood to classify the four class: vegetation increase, vegetation decrease, vegetation nochange and other.
 

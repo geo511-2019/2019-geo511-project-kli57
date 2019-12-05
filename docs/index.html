@@ -380,8 +380,10 @@ div.tocify {
 <ol style="list-style-type: decimal">
 <li><p>The pure pixel of vegetation, urban area, soil and water was collected in 1988, 1998, 2008 and 2018 using ROI method in ENVI. The location of each sample were recorded and export as .shp file. The mean value of each extract satellite value of each class is considered as the spectrum of pure pixel.</p></li>
 <li><p>Acquiring fraction of each class within one-pixel level after performing multiple endmemer spectral mixture analysis, the change images between 1988 and 1998, 1998 and 2008, 2008 and 2018 were acquired using subtraction method. Therefore, each pixel contains change information about vegetation, urban, soil and water.</p></li>
-<li><p>ROI method in ENVI in each change year was used in collection change pixel about vegetation increase, vegetation decrease, vegetation no change and other change. Change points of vegetation increase, vegetation decrease, vegetation no change are collected about each 300 points, the number of point of other change points are 150 points. I use 70% samples to train maximum likelihood classification model, and 30% samples to test classification method.</p></li>
+<li><p>ROI method in ENVI in each change year was used in collecting change pixel about vegetation increase, vegetation decrease, vegetation no change and other change. Change points of vegetation increase, vegetation decrease, vegetation no change are collected about each 300 points, the number of point of other change points are 150 points. I use 70% samples to train maximum likelihood classification model, and 30% samples to test classification method.</p></li>
 </ol>
+<div id="loading-package" class="section level2">
+<h2>Loading package</h2>
 <p>The packages used in this project are listed below:</p>
 <pre class="r"><code>library(googledrive)
 library(raster)
@@ -391,10 +393,14 @@ library(foreach)
 library(doParallel)
 library(tidyverse)
 library(RStoolbox)</code></pre>
+</div>
+<div id="study-area" class="section level2">
+<h2>Study area</h2>
 <p>The post image is Landsat8OLI image I used in 2018.</p>
 <p><img src="index_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-<div id="unmixing-and-classification" class="section level2">
-<h2>Unmixing and classification</h2>
+</div>
+<div id="extract-sample-value" class="section level2">
+<h2>Extract sample value</h2>
 <p>After extract pure pixel satellite value, the value of endmember of each class were averaged as the value of each pure class.</p>
 <pre class="r"><code>extract_water_2018=raster::extract(img2018,img2018_water)
 extract_veg_2018=raster::extract(img2018,img2018_veg)
@@ -424,10 +430,16 @@ end_2018</code></pre>
 ## soil                3259.7874               2437.1682               1682.1300
 ## urban               2268.0946               2242.4622               1832.0127
 ## veg                 3700.2296               1464.5617                599.7139</code></pre>
+</div>
+<div id="unmixing-image-using-multiple-endmember-spectral-mixture-analysis" class="section level2">
+<h2>Unmixing image using Multiple Endmember Spectral Mixture Analysis</h2>
 <p>Multiple Endmember Spectral Mixture Anslysis was used in acquiring fraction of each class. By allowing various endmember for per-pixel level, each pixel can be accounted for fraction of each class. In this study, MESMA acquired five imgae: soil fraction, vegetation fraction, urban fracion and water fraction and RMSE. Considering the change fraction of four class, the first four layer were extracted.</p>
 <pre class="r"><code>unmix2018 &lt;- mesma(img2018,end_2018, method = &quot;NNLS&quot;)
 unmix2008 &lt;- mesma(img2008,end_2008, method = &quot;NNLS&quot;)
 change_2018&lt;- (unmix2018-unmix2008)[[1:4]]</code></pre>
+</div>
+<div id="monitor-vegetation-change-using-maximum-likelihood-classification" class="section level2">
+<h2>Monitor vegetation change using Maximum likelihood classification</h2>
 <p>The collected shapefile data is not spatialpoint data frame, so I create data frame using imported data point and connect to the longitude and latitude. And Maximum likelihood to classify the four class: vegetation increase, vegetation decrease, vegetation nochange and other.</p>
 <pre class="r"><code>class_2018=data.frame(class=c(rep(&#39;vegincrease2018&#39;,length(vegincrease2018$ID)),
                               rep(&#39;vegdecrease2018&#39;,length(vegdecrease2018$ID)),
